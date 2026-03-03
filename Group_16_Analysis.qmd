@@ -1,7 +1,81 @@
-# 1. introduction
+---
+title: "Data Analysis Group 16"
+author: "2889642, 2888928, 2960701, 2896766"
+format: 
+  html:
+    embed-resources: true
+execute: 
+  echo: false
+number-sections: true
+---
 
+# Introduction
 
 The main questions of interest are:
 
-Did Edinburgh exhibit a change in measles susceptibility following the retraction of the Wakefield article?
-Did the change, if any, in measles susceptibility occur in 2004 alongside the articles’ retraction?
+Did Edinburgh exhibit a change in measles susceptibility following the retraction of the Wakefield article? Did the change, if any, in measles susceptibility occur in 2004 alongside the article's retraction?
+
+# Exploratory Data Analysis
+
+```{r}
+#| warning: false
+#| message: false
+#| output: false
+
+library(tidyverse)
+
+measles <- read.csv("DAProject16.csv")
+head(measles)
+
+measles$retraction <-cut(measles$Year, breaks = c(-Inf, 2003, Inf),
+                         labels = c("unretracted", "retracted"))
+
+measles$prop <- measles$Y/measles$N
+```
+
+## Numerical
+
+```{r}
+#| message: false
+#| warning: false
+
+library(skimr)
+library(kableExtra)
+
+measles %>% 
+  skim() %>% 
+  kable()
+```
+
+Summary statistics for variables
+
+```{r}
+measles %>% 
+  summarise(mean = mean(prop),
+            sd = sd(prop),
+            .by = retraction) %>% 
+  kable()
+```
+
+When the article was retracted the mean proportion of children susceptible to measles decreased by $0.0261504$ from when the article was first published in 1998.
+
+## Graphical
+
+
+```{r}
+ggplot(measles, aes(x = retraction, y = prop, fill = retraction)) +
+  geom_boxplot() +
+  labs(title = "Proportion of Children with Measles by Article Status",
+       y = "Proportion",
+       x = "Article Status") +
+  scale_fill_discrete(name = "Article Status",
+                      labels = c("Unretracted", "Retracted"))
+```
+
+The median proportion of children susceptible to measles decreases after the article was retracted. The variability of the proportion also decreases. The proportion of children susceptible to measles is less skewed when the article was retracted compared to when the original article.
+
+# Formal Analysis
+
+
+
+# Conclusions
