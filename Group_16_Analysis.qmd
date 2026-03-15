@@ -21,13 +21,17 @@ library(performance)
 library(kableExtra)
 ```
 
-# 1. introduction
+# Introduction
 
-The main questions of interest are:
+In 1998, an article was published by *Andrew Wakefield* and 12 others that falsely claimed that the measles, mumps, and rubella (MMR) vaccine might be linked to autism. This caused widespread public concern, leading to many worried parents worldwide to stop vaccinating their children, which put many children at a higher risk of catching the disease. The article was later retracted after scientists proved there was no link between the MMR vaccine and autism.
 
-Did Edinburgh exhibit a change in measles susceptibility following the retraction of the Wakefield article? Did the change, if any, in measles susceptibility occur in 2004 alongside the articles’ retraction?
+This report analyses data on measles susceptibility among children in 101 intermediate zones (IZs) in Edinburgh between 1998 and 2012. The dataset records the year the data was collected, the total number of pre-school children $(N)$, and the number of those children who were susceptible to measles $(Y)$.
 
-# Exploratory DA
+The main questions of interest are whether measles susceptibility in Edinburgh changed following the articles retraction, and whether any such change occurred specifically in 2004, the year the retraction took place.
+
+@sec-eda consists of an exploratory analysis of the measles data, focusing on the distribution of susceptibility rates over time to identify trends and potential shifts surrounding the 2004 retraction. @sec-fda contains the results from fitting a model to the data, as well as the assessment of the model assumptions. Concluding remarks are given in @sec-con.
+
+# Exploratory Data Analysis {#sec-eda}
 
 ```{r}
 #| echo: false
@@ -103,3 +107,6 @@ ggplot(summary, aes(x = Year, y = Prop_Mean)) +
   theme_minimal()
 ```
 
+# Formal Data Analysis {#sec-fda}
+
+# Conclusions  {#sec-con}
