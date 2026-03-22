@@ -100,5 +100,13 @@ ggplot(data, aes(x = Year, y = proportion)) +
   theme_minimal()
 ```
 
+## Formal conclusions
+The statistical analysis indicates that measles susceptibility in Edinburgh changed significantly over the study period.
+
+The logistic regression model reveals a strong negative temporal trend, indicating that susceptibility declined over time.
+
+Furthermore, the post-2004 indicator variable is statistically significant, suggesting that a shift in susceptibility occurred following the retraction of the Wakefield article.
+
+These results provide evidence that vaccination behaviour and population immunity may have changed around the time of the article's retraction.
 
 
