@@ -1,7 +1,134 @@
-# 1. introduction
+---
+title: "Data Analysis: Group 16"
+author: "2889642, 2888928, 2960701, 2896766"
+number-sections: true
+format: 
+  html:
+    embed-resources: true
+editor_options: 
+  chunk_output_type: console
+theme: flatly
+---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+library(ggplot2)
+library(tidyverse)
+library(sjPlot)
+library(performance)
+library(kableExtra)
+```
+
+# Introduction
+
+In 1998, an article was published by *Andrew Wakefield* and 12 others that falsely claimed that the measles, mumps, and rubella (MMR) vaccine might be linked to autism. This caused widespread public concern, leading to many worried parents worldwide to stop vaccinating their children, which put many children at a higher risk of catching the disease. The article was later retracted after scientists proved there was no link between the MMR vaccine and autism.
+
+This report analyses data on measles susceptibility among children in 101 intermediate zones (IZs) in Edinburgh between 1998 and 2012. The dataset records the year the data was collected, the total number of pre-school children $(N)$, and the number of those children who were susceptible to measles $(Y)$.
+
+The main questions of interest are whether measles susceptibility in Edinburgh changed following the articles retraction, and whether any such change occurred specifically in 2004, the year the retraction took place.
+
+@sec-eda consists of an exploratory analysis of the measles data, focusing on the distribution of susceptibility rates over time to identify trends and potential shifts surrounding the 2004 retraction. @sec-fda contains the results from fitting a model to the data, as well as the assessment of the model assumptions. Concluding remarks are given in @sec-con.
+
+# Exploratory Data Analysis {#sec-eda}
+
+```{r}
+#| echo: false
+#| message: false
+
+measles <- read.csv("DAProject16.csv") |>
+  mutate(prop = Y/N)
+```
+
+To appropriately compare measles susceptibility across different intermediate zones, we must account for varying population sizes. Therefore, we calculate the susceptibility proportion $(Y/N)$ for each IZ.
+
+To investigate whether Edinburgh exhibited a change in measles susceptibility following the retraction of the Wakefield article, @tbl-summary displays the mean, median, and standard deviation of the susceptibility rate across the observed years.
 
 
-The main questions of interest are:
+```{r}
+#| echo: false
+#| label: tbl-summary
+#| tbl-cap: Mean, median and standard deviation (sd) of the measles susceptibility proportion by Year.
 
-Did Edinburgh exhibit a change in measles susceptibility following the retraction of the Wakefield article?
-Did the change, if any, in measles susceptibility occur in 2004 alongside the articles’ retraction?
+summary <- measles %>%
+  summarise('Prop_Mean' = mean(prop, na.rm = TRUE),
+            'Prop_Median' = median(prop, na.rm = TRUE),
+            'Prop_sd' = sd(prop, na.rm = TRUE),
+            .by = Year)
+
+summary %>%
+  kable(col.names = c("Year",
+                      "Mean Proportion",
+                      "Median Proportion",
+                      "Proportion SD"),
+        digits = 3)
+```
+
+From the article's release in 1998 to its retraction in 2004, the mean proportion of children susceptible to measles dropped from $0.095$ to $0.080$. The mean proportion continued to drop after the article was retracted falling to $0.050$ in 2012.
+
+@fig-box illustrates the overall distribution and spread of these susceptibility rates.
+
+```{r}
+#| echo: false
+#| fig-cap: Distribution of measles susceptibility rates across intermediate zones from 1998 to 2012
+#| label: fig-box
+#| fig-align: center
+#| fig-width: 6
+#| fig-height: 4
+
+ggplot(measles, aes(x = factor(Year), y = prop)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.6) +
+  labs(x = "Year of Data Collection",
+       y = "Susceptibility Proportion") +
+  theme_minimal()
+```
+
+The median of susceptibility proportion decreases steadily from the article's release in 1998 to its retraction. After the article was retracted the median continues to decrease. The variability of the susceptibility proportion is much lower in 2010 and 2012 compared to the other years of data collection. 
+
+
+To determine if the change in measles susceptibility occurred exactly in 2004 alongside the articles retraction, @fig-trend visualises the mean susceptibility rate over the entire time period. The dashed vertical line highlights 2004 so we can observe whether the rate drops immediately during this year, or if the decline is delayed.
+
+```{r}
+#| echo: false
+#| fig-cap: Trend of the mean measles susceptibility rate over time. The dashed line marks the 2004 retraction. 
+#| label: fig-trend
+#| fig-align: center
+#| fig-width: 6
+#| fig-height: 4
+
+ggplot(summary, aes(x = Year, y = Prop_Mean)) +
+  geom_line(colour = "slateblue4", linewidth = 1, aes(group = 1)) +
+  geom_point(colour = "slateblue4", size = 3) +
+  geom_vline(xintercept = 2004, linetype = "dashed", colour = "springgreen4", linewidth = 1) +
+  scale_x_continuous(breaks = c(1998, 2000, 2002, 2004, 2008, 2010, 2012)) +
+  labs(x = "Year of Data Collection",
+       y = "Mean Susceptibility Proportion") +
+  theme_minimal()
+```
+
+It is clearly seen in the above figure that the mean susceptibility proportion drops significantly in the years following the articles retraction. The biggest change in mean susceptibility proportion comes from 2008 to 2010 with the steepest line segment in @fig-line.
+
+To further show if there was a change in the proportion of children susceptible to measles @fig-box2 shows a box plot comparing the data by article status.
+
+```{r}
+#| echo: false
+#| fig-cap: Distribution of measles susceptibility rates across intermediate zones from 1998 to 2012
+#| label: fig-box2
+#| fig-align: center
+#| fig-width: 6
+#| fig-height: 4
+
+ggplot(measles, aes(x = ifelse(Year < 2004, "1998-2003", "2004-2012"), y = prop)) +
+  geom_boxplot(fill = "steelblue", alpha = 0.6) +
+  labs(x = "Year of Data Collection",
+       y = "Susceptibility Proportion") +
+  theme_minimal()
+```
+
+@fig-box2 shows that the median number of children susceptible to measles falls after the article was retracted. After the article was retracted the variability of the susceptibility proportion was lower. There are a few outliers after the articles retraction which may require further investigation.
+
+# Formal Data Analysis {#sec-fda}
+
+# Conclusions  {#sec-con}
