@@ -1,0 +1,104 @@
+---
+title: "Project16"
+author: "Group16"
+format: html
+editor: visual
+execute:
+  echo: false
+  warning: false
+  message: false
+editor_options: 
+  chunk_output_type: console
+---
+
+# Formal Data Analysis {#sec-fda}
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+library(tidyverse)
+library(broom)
+library(kableExtra)
+
+data <- read.csv("DAProject16.csv")
+
+data <- data %>%
+  mutate(
+    proportion = Y/N,
+    Year_c = Year - mean(Year),
+    post2004 = ifelse(Year >= 2004,1,0)
+  )
+
+```
+
+## Model 1: Temporal trend
+$$
+Y_{it} \sim \text{Binomial}(N_{i},\, p_{i})
+$$
+$$
+\text{logit}(p_{it}) = \beta_0 + \beta_1 \cdot \text{Year}
+$$
+```{r}
+model1 <- glm(
+  cbind(Y, N-Y) ~ Year_c,
+  family = binomial,
+  data = data
+)
+
+summary(model1)
+```
+
+The coefficient for Year is negative and highly significant (p < 0.001).
+This indicates that the probability of children being susceptible to measles decreases over time. This suggests that measles immunity in the population improved during the study period.
+
+## Model 2: Change after 2004
+To examine whether susceptibility changed after the retraction of the Wakefield article in 2004, we introduce an indicator variable:
+$$
+Post2004 = 
+\begin{cases} 
+1 & Year \geq 2004 \\ 
+0 & otherwise 
+\end{cases}
+$$
+
+The model becomes:
+$$
+\text{logit}(p_{it}) = \beta_0 + \beta_1 \cdot \text{Year} + \beta_2 \cdot \text{Post2004}
+$$
+```{r}
+model2 <- glm(
+  cbind(Y, N-Y) ~ Year_c + post2004,
+  family = binomial,
+  data = data
+)
+
+summary(model2)
+```
+
+## Model comparsion
+```{r}
+anova(model1, model2, test="Chisq")
+```
+
+The coefficient for post2004 is positive and statistically significant (p ≈ 0.003).
+This suggests that there was a structural change in measles susceptibility following the retraction of the Wakefield article.
+Even after accounting for the overall time trend, susceptibility levels differ significantly after 2004.
+
+```{r}
+ggplot(data, aes(x = Year, y = proportion)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "glm",
+              method.args = list(family="binomial"),
+              se = FALSE,
+              colour = "blue") +
+  labs(
+    title = "Trend in Measles Susceptibility",
+    x = "Year",
+    y = "Proportion susceptible"
+  ) +
+  theme_minimal()
+```
+
+
+
