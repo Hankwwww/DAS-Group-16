@@ -1,0 +1,127 @@
+---
+title: "Formal+conclusion"
+author: "Zhe Wang"
+format: 
+  pdf:
+    number-sections: true
+    documentclass: article
+execute:
+  echo: false
+  message: false
+  warning: false
+  editor: visual
+---
+
+```{r}
+library(tidyverse)
+library(broom)
+library(knitr)
+library(ggplot2)
+
+
+data <- read.csv('DAProject16.csv')
+
+```
+
+## Formal Data Analysis
+
+To investigate whether there was a change in measles susceptibility following the retraction of the Wakefield article and in 2004, we use a simple statistical analysis. We will compare the proportion of susceptible children before and after 2004 using a t-test.
+
+### Hypothesis Testing
+
+The hypotheses for the analysis are as follows:
+
+-   Null hypothesis (H0): There is no significant difference in measles susceptibility before and after 2004.
+
+-   Alternative hypothesis (H1): There is a significant difference in measles susceptibility before and after 2004.
+
+We will calculate the proportion of susceptible children for each year and perform a t-test to compare these proportions before and after 2004.
+
+```{r}
+data$prop_susceptible <- data$Y / data$N * 100
+
+
+pre_2004 <- data[data$Year < 2004, ]
+post_2004 <- data[data$Year >= 2004, ]
+
+t_test_result <- t.test(pre_2004$prop_susceptible, post_2004$prop_susceptible)
+t_test_result
+```
+
+### Interpretation of Results
+
+The t-test conducted to compare the proportion of susceptible children before and after 2004 yielded a t-statistic of 7.4242 with a p-value of approximately 3.87e-13. This result is highly statistically significant, as the p-value is much smaller than the typical significance level of 0.05.
+
+Given the low p-value, we reject the null hypothesis, which stated that there is no significant difference in the proportions of susceptible children before and after 2004. Therefore, we conclude that there is a significant change in measles susceptibility following the retraction of the Wakefield article in 2004.
+
+The confidence interval for the difference in means ranges from 1.923239 to 9.538253, further supporting the conclusion that there is a meaningful difference in susceptibility before and after the year 2004. This indicates that the retraction of the Wakefield article likely had an impact on measles susceptibility among the population in Edinburgh.
+
+### Model 1: Temporal Trend
+
+In the first model, we investigate the general trend in measles susceptibility over time. Using a binomial logistic regression model, we model the log-odds of susceptibility over the years, assuming a binomial distribution for the outcome (susceptible or not).
+
+The model is expressed as:
+
+$Y_{it} \sim \text{Binomial}(N_i, p_i)$
+
+$\text{logit}(p_{it}) = \beta_0 + \beta_1 \cdot \text{Year}$
+
+This model helps to assess whether there has been a systematic increase or decrease in measles susceptibility over time.
+
+```{r}
+model1 <- glm(cbind(Y, N - Y) ~ Year, family = binomial, data = data)
+summary(model1)
+```
+
+Model 1 shows a significant negative relationship between the year and measles susceptibility (p \< 2e-16), with the coefficient for Year being -0.048958. This indicates that, over time, measles susceptibility has decreased by about 4.9% each year. The trend suggests that public health efforts, like vaccination, may have contributed to this decline.
+
+### Model 2: Change after 2004
+
+The second model introduces an indicator variable, Post2004, to examine whether the retraction of the Wakefield article in 2004 caused a shift in measles susceptibility. The variable is defined as:
+
+$$
+\text{Post2004} = 
+\begin{cases} 
+1 & \text{if Year} \geq 2004 \\ 
+0 & \text{otherwise} 
+\end{cases}
+$$
+
+This model tests the hypothesis that the retraction of the Wakefield article corresponds to a measurable change in susceptibility. The regression model becomes:
+
+$$
+\text{logit}(p_{it}) = \beta_0 + \beta_1 \cdot \text{Year} + \beta_2 \cdot \text{Post2004}
+$$
+
+```{r}
+data$Post2004 <- ifelse(data$Year >= 2004, 1, 0)
+model2 <- glm(cbind(Y, N - Y) ~ Year + Post2004, family = binomial, data = data)
+summary(model2)
+```
+
+Model 2 incorporates a variable, Post2004, which captures the shift in susceptibility after the retraction of the Wakefield article. The coefficient for Post2004 is 0.174826 (p = 0.00302), suggesting a 17.5% increase in susceptibility after 2004. This indicates that the retraction led to a measurable shift in susceptibility, despite the general downward trend over the years.
+
+```{r}
+# Visualization of the predicted probabilities
+data$predicted_prob <- predict(model2, type = "response")
+ggplot(data, aes(x = Year, y = Y / N)) +
+  geom_point(alpha = 0.3, color = "grey") +
+  geom_line(aes(x = Year, y = predicted_prob), color = "blue", linewidth = 1) +
+  geom_vline(xintercept = 2004, linetype = "dashed", color = "red") +
+  labs(title = "Predicted Measles Susceptibility: Pre and Post-2004 Retraction",
+       subtitle = "Binomial GLM Fit with Structural Break at 2004", 
+       x = "Year", y = "Proportion of Susceptible Children") +
+  theme_classic()
+
+```
+
+### Interpretation of Results from the Visualization
+
+The graph illustrates the predicted probabilities of measles susceptibility over time, with a clear visual indication of the structural break in 2004 marked by the vertical red dashed line. The x-axis represents the years, while the y-axis shows the proportion of susceptible children.
+
+From the plot, we observe the following:
+
+1.  Pre-2004 Trend: Before 2004, the proportion of susceptible children appears to follow a gradual decline, consistent with the general trend indicated in Model 1. The line is relatively steady, reflecting a slow but continuous decrease in susceptibility over time.
+2.  Post-2004 Change: After the 2004 retraction of the Wakefield article, there is a noticeable shift in the trend. The line begins to level off, indicating that measles susceptibility remained more stable post-2004 compared to the preceding years. This suggests that the retraction may have influenced the public's confidence in vaccination, resulting in less of a downward trend in susceptibility after 2004.
+
+The red dashed line at 2004 visually emphasizes the structural break at this point, reinforcing the findings from Model 2, which highlighted the significant shift in measles susceptibility in Edinburgh following the retraction of the Wakefield article.
