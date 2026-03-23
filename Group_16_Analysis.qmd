@@ -38,7 +38,7 @@ The main questions of interest are whether measles susceptibility in Edinburgh c
 #| echo: false
 #| message: false
 
-measles <- read.csv("DAProject16.csv") |>
+measles <- read.csv("DAProject16.csv") %>% 
   mutate(prop = Y/N)
 ```
 
@@ -108,7 +108,7 @@ ggplot(summary, aes(x = Year, y = Prop_Mean)) +
   theme_minimal()
 ```
 
-It is clearly seen in the above figure that the mean susceptibility proportion drops significantly in the years following the articles retraction. The biggest change in mean susceptibility proportion comes from 2008 to 2010 with the steepest line segment in @fig-line.
+It is clearly seen in the above figure that the mean susceptibility proportion drops significantly in the years following the articles retraction. The biggest change in mean susceptibility proportion comes from 2008 to 2010 with the steepest line segment in @fig-trend.
 
 To further show if there was a change in the proportion of children susceptible to measles @fig-box2 shows a box plot comparing the data by article status.
 
