@@ -1,14 +1,27 @@
 ---
 title: "Data Analysis: Group 16"
 author: "2889642, 2888928, 2960701, 2896766"
-number-sections: true
 format: 
-  html:
+  pdf:
     embed-resources: true
+    documentclass: article
+    number-sections: true
+    geometry: margin = 0.5in
 editor_options: 
   chunk_output_type: console
 theme: flatly
 ---
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+
+# install.packages("tinytex")
+# tinytex::install_tinytex()
+library(tinytex)
+```
+
 
 ```{r}
 #| echo: false
