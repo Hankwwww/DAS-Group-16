@@ -3,8 +3,9 @@ title: "Project16"
 author: "Group16"
 format: 
   pdf:
-    number-sections: true
-    documentclass: article
+    header-includes:
+      - \usepackage{float}
+      
 editor: visual
 execute:
   echo: false
@@ -157,6 +158,8 @@ To further contextualize these statistical findings, we examine both the aggrega
 
 ```{r}
 #| label: fig-annual-trend
+#| fig-width: 4
+#| fig-height: 3
 #| fig-cap: Observed annual mean susceptibility rates (aggregate)
 
 annual_trend <- data %>%
@@ -178,13 +181,14 @@ The aggregate data in @fig-annual-trend illustrates a discernible decline in the
 ```{r}
 #| label: fig-visual
 #| fig-width: 4
-#| fig-height: 4
-#| fig-cap: Trend in Measles Susceptibility
+#| fig-height: 3
+#| fig-pos: 'H'
+#| fig-cap: "Trend in Measles Susceptibility"
 
 ggplot(data, aes(x = Year, y = proportion)) +
   geom_point(alpha = 0.4) +
   geom_smooth(method = "glm",
-              method.args = list(family="binomial"),
+              method.args = list(family = "binomial"),
               se = FALSE,
               colour = "blue") +
   labs(
@@ -203,4 +207,4 @@ The empirical analysis of measles susceptibility in Edinburgh (1998–2012) prov
 
 The results from the temporal trend model confirm a systematic reduction in susceptibility, with the odds declining by approximately 4.8% per annum. This trajectory indicates a sustained improvement in population immunity over the study period. However, the integration of the post-2004 indicator reveals a significant structural shift following the Wakefield article retraction. Although the long-term trend remained downward, the positive coefficient ($\hat{\beta}_2 = 0.1743, p \approx 0.003$) suggests that susceptibility levels were notably higher after 2004 than predicted by a purely linear trend. The likelihood ratio test ($p = 0.0032$) confirms that this model offers a superior fit, underscoring the 2004 retraction as a pivotal factor in shaping the city's epidemiological landscape.
 
-In terms of future work, incorporating Spatial Random Effects would be beneficial for identifying geographical differences across Edinburgh’s 101 intermediate zones. Further, analyzing granular vaccination uptake data could provide deeper insights into the socio-demographic factors driving the observed shifts in immunity post-2004.
+Looking ahead, further research could benefit from examining regional differences across Edinburgh’s intermediate zones to better understand local variations in measles susceptibility. Additionally, analyzing more detailed data on vaccination uptake and public health interventions would help identify the socio-demographic factors driving changes in immunity levels, particularly following the 2004 retraction.
