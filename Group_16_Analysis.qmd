@@ -2,12 +2,20 @@
 title: "Data Analysis: Group 16"
 author: "2889642, 2888928, 2960701, 2896766"
 number-sections: true
-format: 
-  html:
-    embed-resources: true
-editor_options: 
-  chunk_output_type: console
 theme: flatly
+format:
+  pdf:
+    titlepage: true
+    toc: false
+    geometry: margin=1in
+classoption: titlepage
+execute:
+  echo: false
+  message: false
+  warning: false
+editor: visual
+header-includes:
+  - \usepackage{float}
 ---
 
 ```{r}
@@ -46,11 +54,11 @@ To appropriately compare measles susceptibility across different intermediate zo
 
 To investigate whether Edinburgh exhibited a change in measles susceptibility following the retraction of the Wakefield article, @tbl-summary displays the mean, median, and standard deviation of the susceptibility rate across the observed years.
 
-
 ```{r}
 #| echo: false
 #| label: tbl-summary
 #| tbl-cap: Mean, median and standard deviation (sd) of the measles susceptibility proportion by Year.
+
 
 summary <- measles %>%
   summarise('Prop_Mean' = mean(prop, na.rm = TRUE),
@@ -75,8 +83,9 @@ From the article's release in 1998 to its retraction in 2004, the mean proportio
 #| fig-cap: Distribution of measles susceptibility rates across intermediate zones from 1998 to 2012
 #| label: fig-box
 #| fig-align: center
-#| fig-width: 6
-#| fig-height: 4
+#| fig-width: 4
+#| fig-height: 2.5
+#| fig-pos: 'H'
 
 ggplot(measles, aes(x = factor(Year), y = prop)) +
   geom_boxplot(fill = "steelblue", alpha = 0.6) +
@@ -85,8 +94,7 @@ ggplot(measles, aes(x = factor(Year), y = prop)) +
   theme_minimal()
 ```
 
-The median of susceptibility proportion decreases steadily from the article's release in 1998 to its retraction. After the article was retracted the median continues to decrease. The variability of the susceptibility proportion is much lower in 2010 and 2012 compared to the other years of data collection. 
-
+The median of susceptibility proportion decreases steadily from the article's release in 1998 to its retraction. After the article was retracted the median continues to decrease. The variability of the susceptibility proportion is much lower in 2010 and 2012 compared to the other years of data collection.
 
 To determine if the change in measles susceptibility occurred exactly in 2004 alongside the articles retraction, @fig-trend visualises the mean susceptibility rate over the entire time period. The dashed vertical line highlights 2004 so we can observe whether the rate drops immediately during this year, or if the decline is delayed.
 
@@ -95,9 +103,9 @@ To determine if the change in measles susceptibility occurred exactly in 2004 al
 #| fig-cap: Trend of the mean measles susceptibility rate over time. The dashed line marks the 2004 retraction. 
 #| label: fig-trend
 #| fig-align: center
-#| fig-width: 6
-#| fig-height: 4
-
+#| fig-width: 4
+#| fig-height: 2.5
+#| fig-pos: 'H'
 ggplot(summary, aes(x = Year, y = Prop_Mean)) +
   geom_line(colour = "slateblue4", linewidth = 1, aes(group = 1)) +
   geom_point(colour = "slateblue4", size = 3) +
@@ -117,8 +125,9 @@ To further show if there was a change in the proportion of children susceptible 
 #| fig-cap: Distribution of measles susceptibility rates across intermediate zones from 1998 to 2012
 #| label: fig-box2
 #| fig-align: center
-#| fig-width: 6
-#| fig-height: 4
+#| fig-width: 4
+#| fig-height: 2.5
+#| fig-pos: 'H'
 
 ggplot(measles, aes(x = ifelse(Year < 2004, "1998-2003", "2004-2012"), y = prop)) +
   geom_boxplot(fill = "steelblue", alpha = 0.6) +
@@ -153,14 +162,11 @@ data <- data %>%
 
 To formally investigate measles susceptibility, we model the number of susceptible children (Y) out of the total number of children (N) using a binomial generalised linear model with a logit link.
 
-For each observation, 
-$$
+For each observation, $$
 Y_{i} \sim \text{Binomial}(N_{i},\, p_{i})
-$$
-where $p_{i}$ represents the probability that a child in a given intermediate zone and year is susceptible to measles.
+$$ where $p_{i}$ represents the probability that a child in a given intermediate zone and year is susceptible to measles.
 
-The quantity of interest is therefore the proportion of susceptible children:
-$$
+The quantity of interest is therefore the proportion of susceptible children: $$
 p_{i} = \frac{Y_i}{N_i},
 $$
 
@@ -183,6 +189,9 @@ where:
 -   $\beta_1$ represents the temporal trend.
 
 ```{r}
+#| echo: false
+#| warning: false
+#| message: false
 #| label: tbl-mdl1
 #| tbl-cap: Logistic regression results for temporal trend model
 model1 <- glm(cbind(Y, N-Y) ~ Year_c,
@@ -203,25 +212,24 @@ This provides strong evidence that measles susceptibility in Edinburgh has chang
 
 ## Model 2: Change after 2004
 
-To investigate whether susceptibility changed after the retraction of the Wakefield article in 2004, we introduce an indicator variable: 
-$$
+To investigate whether susceptibility changed after the retraction of the Wakefield article in 2004, we introduce an indicator variable: $$
 Post2004 = 
 \begin{cases} 
 1 & Year \geq 2004 \\ 
 0 & otherwise 
 \end{cases}
-$$ 
-The logistic model becomes: 
-$$
+$$ The logistic model becomes: $$
 \text{logit}(p_{i}) = \beta_0 + \beta_1 \cdot \text{Year}_{i} + \beta_2 \cdot \text{Post2004}_{i}
-$$ 
-where:
+$$ where:
 
 -   $\beta_1$ represents the overall temporal trend
 
 -   $\beta_2$ measures any additional change after 2004.
 
 ```{r}
+#| echo: false
+#| warning: false
+#| message: false
 #| label: tbl-mdl2
 #| tbl-cap: Logistic regression results including post-2004 indicator
 
@@ -236,7 +244,7 @@ kable(model2_table,
   digits=4)
 ```
 
-In @tbl-mdl2, the model shows that the overall year effect remained significantly negative$(\hat{\beta}_1 = -0.0645, p < 0.001)$,  while the post-2004 indicator was positive $(\hat{\beta}_2 = 0.1743)$ and statistically significant $(p \approx 0.003)$, indicating that including this variable significantly improves the model.
+In @tbl-mdl2, the model shows that the overall year effect remained significantly negative$(\hat{\beta}_1 = -0.0645, p < 0.001)$, while the post-2004 indicator was positive $(\hat{\beta}_2 = 0.1743)$ and statistically significant $(p \approx 0.003)$, indicating that including this variable significantly improves the model.
 
 On the odds scale, $\exp(0.1743) \approx 1.19$ which suggests that, after accounting for the overall linear time trend, the odds of measles susceptibility for observations from 2004 onwards are approximately 19% higher than would be expected from the temporal trend alone.
 
@@ -245,6 +253,9 @@ Importantly, this does not imply that susceptibility increases after 2004. The c
 ## Model comparsion
 
 ```{r}
+#| echo: false
+#| warning: false
+#| message: false
 #| label: tbl-comparsion
 #| tbl-cap: Likelihood ratio test comparing nested models
 
@@ -261,7 +272,7 @@ $$
 H_0 : \beta_2 &= 0, \\
 H_1 : \beta_2 &\neq 0
 \end{aligned}
-$$ 
+$$
 
 The test result was statistically significant $(p = 0.0032)$, indicating that the model including the post-2004 indicator provides a significantly better fit to the data.
 
@@ -269,31 +280,12 @@ This provides statistical evidence that measles susceptibility differed signific
 
 ## Visualization of Trends
 
-To further contextualize these statistical findings, we examine both the aggregate annual proportions and the fitted values from the logistic model.
+To further contextualize these statistical findings, we examine the aggregate annual proportions from the logistic model.
 
 ```{r}
-#| label: fig-annual-trend
-#| fig-width: 4
-#| fig-height: 3
-#| fig-cap: Observed annual mean susceptibility rates (aggregate)
-
-annual_trend <- data %>%
-  group_by(Year) %>%
-  summarise(total_Y = sum(Y), total_N = sum(N)) %>%
-  mutate(Mean_p = total_Y / total_N)
-
-ggplot(annual_trend, aes(x = Year, y = Mean_p)) +
-  geom_line(color = "steelblue", size = 1) +
-  geom_point(color = "red", size = 2) +
-  annotate("text", x = 2004.5, y = max(annual_trend$Mean_p), 
-           label = "2004 Retraction", fontface = "italic") +
-  labs(y = "Susceptibility Rate (p)", x = "Year") +
-  theme_bw()
-```
-
-The aggregate data in @fig-annual-trend illustrates a discernible decline in the mean susceptibility rate, particularly after the peak in the early 2000s. While the 2004 retraction is highlighted as a point of interest, the graph indicates that the most substantial decrease in susceptibility occurred later in the decade.
-
-```{r}
+#| echo: false
+#| warning: false
+#| message: false
 #| label: fig-visual
 #| fig-width: 4
 #| fig-height: 3
@@ -314,7 +306,7 @@ ggplot(data, aes(x = Year, y = proportion)) +
 
 @fig-visual shows that the fitted logistic regression curve confirms a clear declining trend in measles susceptibility over time.
 
-# Conclusions  {#sec-con}
+# Conclusions {#sec-con}
 
 The empirical analysis of measles susceptibility in Edinburgh (1998–2012) provides a rigorous basis for addressing the research objectives.
 
