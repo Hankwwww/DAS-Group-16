@@ -1,4 +1,4 @@
----
+C---
 title: "Project16"
 author: "Group16"
 format: 
@@ -200,7 +200,7 @@ ggplot(data, aes(x = Year, y = proportion)) +
 
 @fig-visual shows that the fitted logistic regression curve confirms a clear declining trend in measles susceptibility over time.
 
-## Formal conclusions
+## Conclusions
 
 The empirical analysis of measles susceptibility in Edinburgh (1998–2012) provides a rigorous basis for addressing the research objectives.
 
