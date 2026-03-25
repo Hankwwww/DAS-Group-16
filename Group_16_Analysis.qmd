@@ -1,14 +1,15 @@
 ---
-title: "Data Analysis: Group 16"
-author: "2889642, 2888928, 2960701, 2896766"
+title: "Impact of Wakefield's Article Retraction on Measle Susceptibility in Edinburgh"
+author: "Group 16: 2889642, 2888928, 2960701, 2896766"
 number-sections: true
 theme: flatly
 format:
   pdf:
-    titlepage: true
+    embedded-resources: true
+    #titlepage: true
     toc: false
     geometry: margin=1in
-classoption: titlepage
+#classoption: titlepage
 execute:
   echo: false
   message: false
@@ -28,6 +29,7 @@ library(tidyverse)
 library(sjPlot)
 library(performance)
 library(kableExtra)
+library(broom)
 ```
 
 # Introduction
@@ -145,32 +147,25 @@ ggplot(measles, aes(x = ifelse(Year < 2004, "1998-2003", "2004-2012"), y = prop)
 #| warning: false
 #| message: false
 
-library(tidyverse)
-library(broom)
-library(kableExtra)
-
-data <- read.csv("DAProject16.csv")
-
-data <- data %>%
-  mutate(
-    proportion = Y/N,
-    Year_c = Year - mean(Year),
-    post2004 = ifelse(Year >= 2004,1,0)
-  )
+measles <- measles %>% 
+  mutate(post2004 = ifelse(Year >= 2004, 1, 0),
+         year_c = Year - mean(Year))
 
 ```
 
-To formally investigate measles susceptibility, we model the number of susceptible children (Y) out of the total number of children (N) using a binomial generalised linear model with a logit link.
+To formally investigate measles susceptibility, we model the number of susceptible children ($Y_i$) out of the total number of children ($N_i$) in the $i^{\mathrm{th}}$ IZ using a binomial generalised linear model with a logit link.
+
+In the regression we centre the year the data was observed about the mean year this is to assist in model interpretation and potentially reduce collinearity between explanatory variables.
 
 For each observation, $$
 Y_{i} \sim \text{Binomial}(N_{i},\, p_{i})
-$$ where $p_{i}$ represents the probability that a child in a given intermediate zone and year is susceptible to measles.
+$$ where $p_{i}$ represents the probability that a child in the $i^{\mathrm{th}}$ intermediate zone and year is susceptible to measles.
 
 The quantity of interest is therefore the proportion of susceptible children: $$
 p_{i} = \frac{Y_i}{N_i},
 $$
 
-which is modelled as a function of time using logistic regression.
+which is modelled as a function of time using logistic regression. 
 
 ## Model 1: Temporal trend
 
@@ -194,14 +189,16 @@ where:
 #| message: false
 #| label: tbl-mdl1
 #| tbl-cap: Logistic regression results for temporal trend model
-model1 <- glm(cbind(Y, N-Y) ~ Year_c,
+
+model1 <- glm(cbind(Y, N-Y) ~ year_c,
   family = binomial,
-  data = data)
+  data = measles)
 
 model1_table <- tidy(model1)
 
 kable(model1_table,
   digits=4)
+
 ```
 
 @tbl-mdl1 shows that the coefficient for the year is negative $(\hat{\beta}_1 = -0.049)$ and highly significant $(p < 0.001)$. This indicates that the probability of children being susceptible to measles decreases over time. This suggests that measles immunity in the population improved during the study period.
@@ -212,15 +209,15 @@ This provides strong evidence that measles susceptibility in Edinburgh has chang
 
 ## Model 2: Change after 2004
 
-To investigate whether susceptibility changed after the retraction of the Wakefield article in 2004, we introduce an indicator variable: $$
-Post2004 = 
+To investigate whether susceptibility changed after the retraction of the Wakefield article in 2004, we introduce an indicator variable: $$ Post2004 = 
 \begin{cases} 
 1 & Year \geq 2004 \\ 
 0 & otherwise 
-\end{cases}
-$$ The logistic model becomes: $$
-\text{logit}(p_{i}) = \beta_0 + \beta_1 \cdot \text{Year}_{i} + \beta_2 \cdot \text{Post2004}_{i}
-$$ where:
+\end{cases} $$
+
+The logistic model becomes: 
+
+$$ \text{logit}(p_{i}) = \beta_0 + \beta_1 \cdot \text{Year}_{i} + \beta_2 \cdot \text{Post2004}_{i} $$ where:
 
 -   $\beta_1$ represents the overall temporal trend
 
@@ -234,9 +231,9 @@ $$ where:
 #| tbl-cap: Logistic regression results including post-2004 indicator
 
 
-model2 <- glm(cbind(Y, N-Y) ~ Year_c + post2004,
+model2 <- glm(cbind(Y, N-Y) ~ year_c + post2004,
   family = binomial,
-  data = data)
+  data = measles)
 
 model2_table <- tidy(model2)
 
@@ -244,7 +241,7 @@ kable(model2_table,
   digits=4)
 ```
 
-In @tbl-mdl2, the model shows that the overall year effect remained significantly negative$(\hat{\beta}_1 = -0.0645, p < 0.001)$, while the post-2004 indicator was positive $(\hat{\beta}_2 = 0.1743)$ and statistically significant $(p \approx 0.003)$, indicating that including this variable significantly improves the model.
+In @tbl-mdl2, the model shows that the overall year effect remained significantly negative$(\hat{\beta}_1 = -0.0645, p < 0.001)$, while the post-2004 indicator was positive $(\hat{\beta}_2 = 0.1743)$ and statistically significant $(p \approx 0.003)$, indicating that this variable is statistically significant in this model.
 
 On the odds scale, $\exp(0.1743) \approx 1.19$ which suggests that, after accounting for the overall linear time trend, the odds of measles susceptibility for observations from 2004 onwards are approximately 19% higher than would be expected from the temporal trend alone.
 
@@ -265,18 +262,22 @@ kable(anova_results,
   digits=4)
 ```
 
-To assess whether including the post-2004 indicator improves the model, in @tbl-comparsion, a likelihood ratio test was performed to compare the two nested models：
-
-$$
-\begin{aligned}
-H_0 : \beta_2 &= 0, \\
-H_1 : \beta_2 &\neq 0
-\end{aligned}
-$$
+To assess whether including the post-2004 indicator improves the model, in @tbl-comparsion, a likelihood ratio test was performed to compare the two nested models using the hypotheses: $H_0: \beta_2 = 0, H_1: \beta_2 \neq 0$.
 
 The test result was statistically significant $(p = 0.0032)$, indicating that the model including the post-2004 indicator provides a significantly better fit to the data.
 
 This provides statistical evidence that measles susceptibility differed significantly after 2004.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#| results: hide
+
+AIC(model1, model2)
+```
+
+Computing the AIC of both models it can be found that the second model including the post2004 covariate is lower at $3826.257$ compared to the temporal trend model with an AIC of $3832.970$ suggesting the second model provides a better fit to the data.
 
 ## Visualization of Trends
 
@@ -292,7 +293,7 @@ To further contextualize these statistical findings, we examine the aggregate an
 #| fig-pos: 'H'
 #| fig-cap: "Trend in Measles Susceptibility"
 
-ggplot(data, aes(x = Year, y = proportion)) +
+ggplot(measles, aes(x = Year, y = prop)) +
   geom_point(alpha = 0.4) +
   geom_smooth(method = "glm",
               method.args = list(family = "binomial"),
@@ -308,8 +309,6 @@ ggplot(data, aes(x = Year, y = proportion)) +
 
 # Conclusions {#sec-con}
 
-The empirical analysis of measles susceptibility in Edinburgh (1998–2012) provides a rigorous basis for addressing the research objectives.
+The results from the temporal trend model confirm a systematic reduction in susceptibility, with the odds declining approximately 4.8% per year. This trajectory indicates a sustained improvement in population immunity over the study period. However, the integration of the post-2004 indicator reveals a significant structural shift following the Wakefield article retraction. Although the long-term trend remained downward, the positive coefficient suggests that susceptibility levels were notably higher after 2004 than predicted by a purely linear trend. The likelihood ratio test confirms that this model offers a superior fit, underscoring the 2004 retraction as a pivotal factor in shaping the city's epidemiological landscape.
 
-The results from the temporal trend model confirm a systematic reduction in susceptibility, with the odds declining by approximately 4.8% per annum. This trajectory indicates a sustained improvement in population immunity over the study period. However, the integration of the post-2004 indicator reveals a significant structural shift following the Wakefield article retraction. Although the long-term trend remained downward, the positive coefficient suggests that susceptibility levels were notably higher after 2004 than predicted by a purely linear trend. The likelihood ratio test confirms that this model offers a superior fit, underscoring the 2004 retraction as a pivotal factor in shaping the city's epidemiological landscape.
-
-In terms of future work, further research could benefit from examining regional differences across Edinburgh’s intermediate zones to better understand local variations in measles susceptibility. Additionally, analyzing more detailed data on vaccination uptake and public health interventions would help identify the socio-demographic factors driving changes in immunity levels, particularly following the 2004 retraction.
+Further research could benefit from examining regional differences across Edinburgh’s intermediate zones to better understand local variations in measles susceptibility. Additionally, analyzing more detailed data on vaccination uptake and public health interventions would help identify the sociodemographic factors driving changes in immunity levels, particularly following the 2004 retraction. 
