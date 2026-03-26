@@ -12,8 +12,8 @@ The primary goals of this project are to:
 ## Dataset
 
 The dataset used in this analysis is stored in the file `DAProject16.csv` and includes the following columns:
-- "Y": The number of pre-school children susceptible to measles in a given IZ.
-- "N: The total number of pre-school children in a given IZ.
+- **Y**: The number of pre-school children susceptible to measles in a given IZ.
+- **N**: The total number of pre-school children in a given IZ.
 - **Year**: The year in which the data was collected.
 
 ### Summary of Key Variables:
