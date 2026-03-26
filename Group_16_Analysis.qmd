@@ -6,10 +6,10 @@ theme: flatly
 format:
   pdf:
     embedded-resources: true
-    #titlepage: true
+    titlepage: true
     toc: false
     geometry: margin=1in
-#classoption: titlepage
+classoption: titlepage
 execute:
   echo: false
   message: false
@@ -165,7 +165,7 @@ The quantity of interest is therefore the proportion of susceptible children: $$
 p_{i} = \frac{Y_i}{N_i},
 $$
 
-which is modelled as a function of time using logistic regression. 
+which is modelled as a function of time using logistic regression.
 
 ## Model 1: Temporal trend
 
@@ -215,7 +215,7 @@ To investigate whether susceptibility changed after the retraction of the Wakefi
 0 & otherwise 
 \end{cases} $$
 
-The logistic model becomes: 
+The logistic model becomes:
 
 $$ \text{logit}(p_{i}) = \beta_0 + \beta_1 \cdot \text{Year}_{i} + \beta_2 \cdot \text{Post2004}_{i} $$ where:
 
@@ -279,9 +279,8 @@ AIC(model1, model2)
 
 Computing the AIC of both models it can be found that the second model including the post2004 covariate is lower at $3826.257$ compared to the temporal trend model with an AIC of $3832.970$ suggesting the second model provides a better fit to the data.
 
-
 # Conclusions {#sec-con}
 
 The results from the temporal trend model confirm a systematic reduction in susceptibility, with the odds declining approximately 4.8% per year. This trajectory indicates a sustained improvement in population immunity over the study period. However, the integration of the post-2004 indicator reveals a significant structural shift following the Wakefield article retraction. Although the long-term trend remained downward, the positive coefficient suggests that susceptibility levels were notably higher after 2004 than predicted by a purely linear trend. The likelihood ratio test confirms that this model offers a superior fit, underscoring the 2004 retraction as a pivotal factor in shaping the city's epidemiological landscape.
 
-Further research could benefit from examining regional differences across Edinburgh’s intermediate zones to better understand local variations in measles susceptibility. Additionally, analyzing more detailed data on vaccination uptake and public health interventions would help identify the sociodemographic factors driving changes in immunity levels, particularly following the 2004 retraction. 
+Further research could benefit from examining regional differences across Edinburgh’s intermediate zones to better understand local variations in measles susceptibility. Additionally, analyzing more detailed data on vaccination uptake and public health interventions would help identify the sociodemographic factors driving changes in immunity levels, particularly following the 2004 retraction.
