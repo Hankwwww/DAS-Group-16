@@ -6,10 +6,8 @@ theme: flatly
 format:
   pdf:
     embedded-resources: true
-    titlepage: true
     toc: false
     geometry: margin=1in
-classoption: titlepage
 execute:
   echo: false
   message: false
